@@ -1,15 +1,16 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Silkscreen, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { CursorAura } from '@/components/cursor-aura'
 import './globals.css'
-
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const silkscreen = Silkscreen({ weight: '400', subsets: ['latin'], variable: '--font-rubik-glitch' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Saptarshi Bhunia | Full Stack Developer & AI/ML Engineer',
+  description: 'Portfolio of Saptarshi Bhunia — Full Stack Web Developer specializing in modern web experiences, AI, Machine Learning, and Deep Learning.',
   icons: {
     icon: [
       {
@@ -36,7 +37,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className={`font-sans antialiased ${silkscreen.variable} ${spaceGrotesk.variable}`}>
+        <CursorAura />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
