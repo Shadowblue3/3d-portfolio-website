@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Code, FileText, User, Clock, Zap, Git, Database } from "lucide-react";
+import { Code, FileText, User, Zap, GitBranch, Database } from "lucide-react";
 import { SamsungSkillsEffect } from "@/components/ui/text-effect";
 import { Spotlight } from "@/components/ui/spotlight";
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline";
@@ -132,7 +132,7 @@ export function SkillsAndTimeline() {
       date: "Expert",
       content: "Version control and collaboration workflows.",
       category: "Tools",
-      icon: Git,
+      icon: GitBranch,
       relatedIds: [2],
       status: "completed" as const,
       energy: 95,
