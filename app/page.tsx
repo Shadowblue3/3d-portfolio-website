@@ -5,10 +5,14 @@ import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { Spotlight } from "@/components/ui/spotlight";
 import ParticlesComponent from "@/components/ui/particles";
+import { InteractiveMenu } from "@/components/ui/navbar-menu";
 
 export default function Page() {
   return (
     <main className="bg-black/[0.96] min-h-screen text-white relative overflow-hidden">
+      {/* Navbar */}
+      <InteractiveMenu accentColor="#3b82f6" />
+
       {/* Global Background Layer */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <ParticlesComponent />
@@ -19,10 +23,16 @@ export default function Page() {
       </div>
 
       <div className="relative z-10">
-        <HeroSection />
-        <BentoGridSection />
+        <section id="home">
+          <HeroSection />
+        </section>
+        <section id="about">
+          <BentoGridSection />
+        </section>
         <SkillsAndTimeline />
-        <ContactSection />
+        <section id="contact">
+          <ContactSection />
+        </section>
         <Footer />
       </div>
     </main>

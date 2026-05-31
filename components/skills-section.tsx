@@ -30,7 +30,7 @@ const languageNodes: OrbitNode[] = [
 export function SkillsAndTimeline() {
   return (
     <>
-      <section className="py-20 flex flex-col items-center border-b border-white/5">
+      <section id="skills" className="py-20 flex flex-col items-center border-b border-white/5">
         {/* "SKILLS" Tech Drawing Title */}
         <div className="w-full flex justify-center relative z-10 mb-10">
           <SamsungSkillsEffect speed={0.6} className="text-white" />
@@ -67,7 +67,7 @@ export function SkillsAndTimeline() {
       </section>
 
       {/* Projects Section */}
-      <section className="py-32 flex flex-col items-center">
+      <section id="projects" className="py-32 flex flex-col items-center">
         {/* "PROJECTS" Tech Drawing Title */}
         <div className="w-full flex justify-center relative z-10 mb-20">
           <SamsungProjectsEffect speed={0.6} className="text-white" />

@@ -126,6 +126,85 @@
   }
 }
 
+/* Interactive Menu (Navbar) Styling */
+.menu {
+  display: flex;
+  padding: 8px;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  gap: 8px;
+}
+
+.menu__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  color: #a3a3a3;
+  border-radius: 9999px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.menu__item.active {
+  color: var(--component-active-color);
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.05);
+}
+
+.menu__icon {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu__item.active .menu__icon {
+  transform: scale(1.1);
+}
+
+.menu__text {
+  max-width: 0;
+  opacity: 0;
+  white-space: nowrap;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--font-space-grotesk), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.menu__item.active .menu__text {
+  max-width: 200px; /* large enough default */
+  max-width: var(--lineWidth);
+  opacity: 1;
+  margin-left: 10px;
+}
+
+.menu__item:hover:not(.active) {
+  color: white;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@media (max-width: 640px) {
+  .menu {
+    padding: 6px;
+    gap: 4px;
+  }
+  .menu__item {
+    padding: 8px 12px;
+  }
+}
+
 /* Animation for the breathing glow effect */
 @keyframes breathing-glow {
   0%, 100% {
