@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ThreeDMarquee } from "@/components/ui/3d-marquee";
 import { Globe3D, GlobeMarker } from "@/components/ui/3d-globe";
 import { Copy, Check, Mail, Linkedin, Code2, Sparkles } from "lucide-react";
+import { SamsungAboutMeEffect } from "@/components/ui/text-effect";
 
 // ============================================================================
 // Marquee Images
@@ -268,6 +269,10 @@ export function BentoGridSection() {
   return (
     <section className="w-full px-4 py-16 md:py-24">
       <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col items-center mb-16">
+          <SamsungAboutMeEffect speed={0.6} className="text-white" />
+        </div>
+        
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:grid-rows-2 md:gap-5">
           {/* Box 1: 3D Marquee - top left, spans 2 cols */}
           <MarqueeBox />

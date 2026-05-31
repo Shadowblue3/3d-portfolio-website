@@ -5,6 +5,7 @@ import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight"
 import { TextScramble } from "@/components/ui/text-scramble"
 import { BackgroundPaths } from "@/components/ui/background-paths"
+import { GooeyText } from "@/components/ui/gooey-text-morphing"
 
 export function HeroSection() {
   const [showSubtitle, setShowSubtitle] = useState(false)
@@ -42,15 +43,25 @@ export function HeroSection() {
             I&apos;m Saptarshi Bhunia
           </TextScramble>
 
-          <TextScramble
-            as="p"
-            className="font-grotesk mt-4 text-neutral-400 max-w-lg text-base md:text-lg leading-relaxed"
-            duration={1.4}
-            speed={0.02}
-            trigger={showDescription}
-          >
-            A Full Stack Web Developer passionate about building modern web experiences. Deeply invested in AI, Machine Learning, and Deep Learning — bridging the gap between intelligent systems and beautiful interfaces.
-          </TextScramble>
+          {showDescription && (
+            <div className="mt-2 flex flex-col gap-2">
+              <GooeyText
+                texts={["Full stack dev", "Programmer", "Machine Learning", "Deep learning", "Gen AI"]}
+                className="h-16 md:h-20 flex items-center justify-start"
+                textClassName="text-3xl md:text-5xl font-bold text-white text-left left-0 transform-none"
+              />
+              
+              <TextScramble
+                as="p"
+                className="font-grotesk text-neutral-400 max-w-lg text-base md:text-lg leading-relaxed"
+                duration={1.4}
+                speed={0.02}
+                trigger={showDescription}
+              >
+                passionate about building modern web experiences. Deeply invested in AI, Machine Learning, and Deep Learning — bridging the gap between intelligent systems and beautiful interfaces.
+              </TextScramble>
+            </div>
+          )}
         </div>
 
         {/* Right content */}

@@ -11,11 +11,6 @@ export function CursorAura() {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
   
-  // Spring configuration for smooth follow effect
-  const springConfig = { damping: 28, stiffness: 200, mass: 0.5 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
-
   useEffect(() => {
     setIsMounted(true);
     
@@ -47,11 +42,25 @@ export function CursorAura() {
     <motion.div
       className="pointer-events-none fixed left-0 top-0 z-50 h-[400px] w-[400px] rounded-full mix-blend-screen hidden md:block"
       style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
-        opacity: isVisible ? 0.6 : 0,
-        background: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0,0,0,0) 70%)",
-        transition: "opacity 0.3s ease",
+        x: cursorX,
+        y: cursorY,
+        background: "radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 45%, rgba(0,0,0,0) 75%)",
+      }}
+      animate={{
+        opacity: isVisible ? [0.4, 0.8, 0.4] : 0,
+        scale: isVisible ? [0.95, 1.05, 0.95] : 1,
+      }}
+      transition={{
+        opacity: {
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+        scale: {
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
       }}
     />
   );
