@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Silkscreen, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { CursorAura } from '@/components/cursor-aura'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
+
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 const silkscreen = Silkscreen({ weight: '400', subsets: ['latin'], variable: '--font-rubik-glitch' });
@@ -40,6 +42,7 @@ export default function RootLayout({
       <body className={`font-sans antialiased ${silkscreen.variable} ${spaceGrotesk.variable}`}>
         <CursorAura />
         {children}
+        <Toaster position="bottom-right" theme="dark" closeButton richColors />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

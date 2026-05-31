@@ -1,6 +1,8 @@
 import { HeroSection } from "@/components/hero";
 import { BentoGridSection } from "@/components/bento-grid";
 import { SkillsAndTimeline } from "@/components/skills-section";
+import { ContactSection } from "@/components/contact-section";
+import { Footer } from "@/components/footer";
 import { Spotlight } from "@/components/ui/spotlight";
 import ParticlesComponent from "@/components/ui/particles";
 
@@ -20,6 +22,8 @@ export default function Page() {
         <HeroSection />
         <BentoGridSection />
         <SkillsAndTimeline />
+        <ContactSection />
+        <Footer />
       </div>
     </main>
   )

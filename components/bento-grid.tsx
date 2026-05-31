@@ -180,8 +180,8 @@ function ContactBox() {
               <Mail className="h-4 w-4" />
             </div>
             <CopyButton
-              text="saptarshibhunia@email.com"
-              label="saptarshibhunia@email.com"
+              text="saptarshibhunia5@gmail.com"
+              label="saptarshibhunia5@gmail.com"
             />
           </div>
 
@@ -190,8 +190,8 @@ function ContactBox() {
               <Linkedin className="h-4 w-4" />
             </div>
             <CopyButton
-              text="https://linkedin.com/in/saptarshibhunia"
-              label="linkedin.com/in/saptarshibhunia"
+              text="https://www.linkedin.com/in/saptarshi-bhunia-837662300/"
+              label="linkedin.com/in/saptarshi-bhunia"
             />
           </div>
         </div>

@@ -44,7 +44,7 @@ export function CursorAura() {
       style={{
         x: cursorX,
         y: cursorY,
-        background: "radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 45%, rgba(0,0,0,0) 75%)",
+        background: "radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, rgba(37, 99, 235, 0.15) 45%, rgba(0,0,0,0) 75%)",
       }}
       animate={{
         opacity: isVisible ? [0.4, 0.8, 0.4] : 0,
