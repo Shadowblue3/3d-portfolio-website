@@ -37,7 +37,7 @@ export function SkillsAndTimeline() {
         </div>
 
         {/* Grid of Orbits */}
-        <div className="w-full max-w-[1600px] px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 md:gap-32 relative z-10">
+        <div className="w-full max-w-[1600px] px-8 grid grid-cols-1 md:grid-cols-2 gap-x-20 md:gap-x-32 gap-y-10 md:gap-y-0 relative z-10">
           
           {/* Web Dev */}
           <div className="flex flex-col items-center">
@@ -56,7 +56,7 @@ export function SkillsAndTimeline() {
           </div>
 
           {/* Languages & DBs */}
-          <div className="flex flex-col items-center md:col-span-2 lg:col-span-1">
+          <div className="flex flex-col items-center md:col-span-2 md:-mt-32">
             <RadialOrbitalTimeline 
               nodes={languageNodes} 
               centerText={["Languages &", "Databases"]} 
