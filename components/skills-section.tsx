@@ -1,25 +1,93 @@
 "use client";
 
-import { SamsungSkillsEffect } from "@/components/ui/text-effect";
+import { SamsungSkillsEffect, SamsungProjectsEffect } from "@/components/ui/text-effect";
 import { Spotlight } from "@/components/ui/spotlight";
+import RadialOrbitalTimeline, { OrbitNode } from "@/components/ui/radial-orbital-timeline";
+import { FeatureCarousel } from "@/components/ui/feature-carousel";
+
+const webDevNodes: OrbitNode[] = [
+  { icon: "/nodejs.svg", label: "Node.js", status: "complete", date: "Expert", desc: "Server-side JavaScript runtime.", energy: 90, connected: ["React", "Express"] },
+  { icon: "/reaact.svg", label: "React", status: "complete", date: "Expert", desc: "Modern UI library.", energy: 95, connected: ["Node.js", "Tailwind"] },
+  { icon: "/express.svg", label: "Express", status: "complete", date: "Expert", desc: "Web framework for Node.js.", energy: 85, connected: ["Node.js"] },
+  { icon: "/tailwind.svg", label: "Tailwind", status: "complete", date: "Expert", desc: "Utility-first CSS framework.", energy: 95, connected: ["React"] },
+  { icon: "JS", label: "Javascript", status: "complete", date: "Expert", desc: "Core language of the web.", energy: 95, connected: ["React", "Node.js"] },
+];
+
+const aiNodes: OrbitNode[] = [
+  { icon: "/pytorch.svg", label: "PyTorch", status: "progress", date: "Advanced", desc: "Deep learning framework.", energy: 85, connected: ["Sklearn"] },
+  { icon: "/numpy.svg", label: "NumPy", status: "complete", date: "Expert", desc: "Scientific computing in Python.", energy: 90, connected: ["Pandas"] },
+  { icon: "/pandas.svg", label: "Pandas", status: "complete", date: "Expert", desc: "Data manipulation and analysis.", energy: 85, connected: ["NumPy"] },
+  { icon: "/scikitlearn.svg", label: "Sklearn", status: "complete", date: "Expert", desc: "Machine learning library.", energy: 85, connected: ["PyTorch"] },
+  { icon: "🤗", label: "Hugging Face", status: "progress", date: "Advanced", desc: "Transformer models and NLP.", energy: 75, connected: ["PyTorch"] },
+];
+
+const languageNodes: OrbitNode[] = [
+  { icon: "/cpp3.svg", label: "C/C++", status: "complete", date: "Expert", desc: "High-performance systems programming.", energy: 85, connected: ["Python"] },
+  { icon: "/python.svg", label: "Python", status: "complete", date: "Expert", desc: "Versatile language for AI and web.", energy: 95, connected: ["C/C++"] },
+  { icon: "/mongodb.svg", label: "MongoDB", status: "complete", date: "Expert", desc: "NoSQL document database.", energy: 85, connected: ["OracleSQL"] },
+  { icon: "/oracle.svg", label: "OracleSQL", status: "complete", date: "Advanced", desc: "Relational database management.", energy: 80, connected: ["MongoDB"] },
+];
 
 export function SkillsAndTimeline() {
   return (
-    <section className="py-20 relative overflow-hidden min-h-[40vh] flex flex-col items-center justify-center">
-      <Spotlight
-        className="-top-40 left-0 md:left-60 md:-top-20"
-        fill="white"
-      />
-      
-      {/* "SKILLS" Tech Drawing Title */}
-      <div className="w-full flex justify-center relative z-10">
-        <SamsungSkillsEffect speed={0.6} className="text-white" />
-      </div>
+    <>
+      <section className="py-20 relative overflow-hidden flex flex-col items-center border-b border-white/5">
+        <Spotlight
+          className="-top-40 left-0 md:left-60 md:-top-20"
+          fill="white"
+        />
+        
+        {/* "SKILLS" Tech Drawing Title */}
+        <div className="w-full flex justify-center relative z-10 mb-10">
+          <SamsungSkillsEffect speed={0.6} className="text-white" />
+        </div>
 
-      {/* Placeholder for future component integration */}
-      <div className="max-w-7xl mx-auto px-4 mt-20 relative z-10">
-        {/* New component will go here */}
-      </div>
-    </section>
+        {/* Grid of Orbits */}
+        <div className="w-full max-w-[1600px] px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 md:gap-32 relative z-10">
+          
+          {/* Web Dev */}
+          <div className="flex flex-col items-center">
+            <RadialOrbitalTimeline 
+              nodes={webDevNodes} 
+              centerText={["Web", "Development"]} 
+            />
+          </div>
+
+          {/* AI/ML */}
+          <div className="flex flex-col items-center">
+            <RadialOrbitalTimeline 
+              nodes={aiNodes} 
+              centerText={["AI &", "Machine Learning"]} 
+            />
+          </div>
+
+          {/* Languages & DBs */}
+          <div className="flex flex-col items-center md:col-span-2 lg:col-span-1">
+            <RadialOrbitalTimeline 
+              nodes={languageNodes} 
+              centerText={["Languages &", "Databases"]} 
+            />
+          </div>
+
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      <section className="py-32 relative overflow-hidden flex flex-col items-center">
+        <Spotlight
+          className="-top-40 right-0 md:right-60 md:-top-20"
+          fill="white"
+        />
+        
+        {/* "PROJECTS" Tech Drawing Title */}
+        <div className="w-full flex justify-center relative z-10 mb-20">
+          <SamsungProjectsEffect speed={0.6} className="text-white" />
+        </div>
+
+        <div className="w-full relative z-10">
+          <FeatureCarousel />
+        </div>
+      </section>
+    </>
   );
 }

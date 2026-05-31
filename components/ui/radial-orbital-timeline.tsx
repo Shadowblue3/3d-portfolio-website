@@ -1,346 +1,308 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Link, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface TimelineItem {
-  id: number;
-  title: string;
+import { useEffect, useRef, useState, useCallback } from "react";
+
+export interface OrbitNode {
+  icon: string;
+  label: string;
+  status: "complete" | "progress" | "pending";
   date: string;
-  content: string;
-  category: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  relatedIds: number[];
-  status: "completed" | "in-progress" | "pending";
+  desc: string;
   energy: number;
+  connected: string[];
+}
+
+// ─────────────────────────────────────────────
+//  Customisation knobs
+// ─────────────────────────────────────────────
+const ORBIT_RADIUS = 180; // px — orbit ring radius
+const NODE_SIZE    = 72;  // px — sphere diameter
+const CENTER_SIZE  = 100; // px — center circle diameter
+const SPEED        = 0.28; // degrees per 60 fps frame (higher = faster)
+
+// ─────────────────────────────────────────────
+//  Constants (derived, don't edit)
+// ─────────────────────────────────────────────
+const SCENE      = (ORBIT_RADIUS + NODE_SIZE / 2 + 56) * 2;
+const CX         = SCENE / 2;
+const CY         = SCENE / 2;
+const HALF_NODE  = NODE_SIZE / 2;
+const LBL_OFFSET = HALF_NODE + 20;
+
+const STATUS_LABELS = {
+  complete: "Complete",
+  progress: "In progress",
+  pending:  "Pending",
+};
+
+const STATUS_CLASSES = {
+  complete: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  progress: "bg-blue-500/10    text-blue-400    border-blue-500/20",
+  pending:  "bg-amber-500/10   text-amber-400   border-amber-500/20",
+};
+
+// ─────────────────────────────────────────────
+//  Pure helpers (no React)
+// ─────────────────────────────────────────────
+function getXY(angleDeg: number, r: number) {
+  const rad = (angleDeg * Math.PI) / 180;
+  return { x: CX + Math.cos(rad) * r, y: CY + Math.sin(rad) * r };
+}
+
+function clampCardPos(nx: number, ny: number) {
+  const cardW = 240, cardH = 260;
+  let left = nx + HALF_NODE + 8;
+  let top  = ny - 80;
+  if (left + cardW > SCENE) left = nx - HALF_NODE - cardW - 8;
+  top = Math.min(Math.max(top, 8), SCENE - cardH - 8);
+  return { left, top };
 }
 
 interface RadialOrbitalTimelineProps {
-  timelineData: TimelineItem[];
+  nodes: OrbitNode[];
+  centerText?: string[];
 }
 
 export default function RadialOrbitalTimeline({
-  timelineData,
+  nodes,
+  centerText = ["Portfolio", "Timeline"],
 }: RadialOrbitalTimelineProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>(
-    {}
-  );
-  const [viewMode, setViewMode] = useState<"orbital">("orbital");
-  const [rotationAngle, setRotationAngle] = useState<number>(0);
-  const [autoRotate, setAutoRotate] = useState<boolean>(true);
-  const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
-  const [centerOffset, setCenterOffset] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
-  const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === containerRef.current || e.target === orbitRef.current) {
-      setExpandedItems({});
-      setActiveNodeId(null);
-      setPulseEffect({});
-      setAutoRotate(true);
-    }
-  };
+  const nodeRefs  = useRef<(HTMLButtonElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const cardRef   = useRef<HTMLDivElement | null>(null);
 
-  const toggleItem = (id: number) => {
-    setExpandedItems((prev) => {
-      const newState = { ...prev };
-      Object.keys(newState).forEach((key) => {
-        if (parseInt(key) !== id) {
-          newState[parseInt(key)] = false;
-        }
-      });
-
-      newState[id] = !prev[id];
-
-      if (!prev[id]) {
-        setActiveNodeId(id);
-        setAutoRotate(false);
-
-        const relatedItems = getRelatedItems(id);
-        const newPulseEffect: Record<number, boolean> = {};
-        relatedItems.forEach((relId) => {
-          newPulseEffect[relId] = true;
-        });
-        setPulseEffect(newPulseEffect);
-
-        centerViewOnNode(id);
-      } else {
-        setActiveNodeId(null);
-        setAutoRotate(true);
-        setPulseEffect({});
-      }
-
-      return newState;
-    });
-  };
+  const anglesRef  = useRef(nodes.map((_, i) => (360 / nodes.length) * i));
+  const activeRef  = useRef<number | null>(null);
+  const rafRef     = useRef<number | null>(null);
+  const lastRef    = useRef<number | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
-    let rotationTimer: NodeJS.Timeout;
+    activeRef.current = activeIdx;
+  }, [activeIdx]);
 
-    if (autoRotate && viewMode === "orbital") {
-      rotationTimer = setInterval(() => {
-        setRotationAngle((prev) => {
-          const newAngle = (prev + 0.3) % 360;
-          return Number(newAngle.toFixed(3));
+  useEffect(() => {
+    function loop(ts: number) {
+      if (lastRef.current !== null) {
+        const dt = Math.min(ts - lastRef.current, 50);
+        const step = SPEED * (dt / 60);
+
+        nodes.forEach((_, i) => {
+          anglesRef.current[i] = (anglesRef.current[i] + step) % 360;
+          const { x, y }   = getXY(anglesRef.current[i], ORBIT_RADIUS);
+          const { x: lx, y: ly } = getXY(anglesRef.current[i], ORBIT_RADIUS + LBL_OFFSET);
+
+          const nodeEl  = nodeRefs.current[i];
+          const labelEl = labelRefs.current[i];
+          if (nodeEl) {
+            nodeEl.style.left = x - HALF_NODE + "px";
+            nodeEl.style.top  = y - HALF_NODE + "px";
+          }
+          if (labelEl) {
+            labelEl.style.left = lx + "px";
+            labelEl.style.top  = ly + "px";
+          }
         });
-      }, 50);
-    }
 
-    return () => {
-      if (rotationTimer) {
-        clearInterval(rotationTimer);
+        const ai = activeRef.current;
+        if (ai !== null && cardRef.current) {
+          const { x, y } = getXY(anglesRef.current[ai], ORBIT_RADIUS);
+          const { left, top } = clampCardPos(x, y);
+          cardRef.current.style.left = left + "px";
+          cardRef.current.style.top  = top + "px";
+        }
       }
-    };
-  }, [autoRotate, viewMode]);
-
-  const centerViewOnNode = (nodeId: number) => {
-    if (viewMode !== "orbital" || !nodeRefs.current[nodeId]) return;
-
-    const nodeIndex = timelineData.findIndex((item) => item.id === nodeId);
-    const totalNodes = timelineData.length;
-    const targetAngle = (nodeIndex / totalNodes) * 360;
-
-    setRotationAngle(270 - targetAngle);
-  };
-
-  const calculateNodePosition = (index: number, total: number) => {
-    const angle = ((index / total) * 360 + rotationAngle) % 360;
-    const radius = 200;
-    const radian = (angle * Math.PI) / 180;
-
-    const x = Number((radius * Math.cos(radian) + centerOffset.x).toFixed(2));
-    const y = Number((radius * Math.sin(radian) + centerOffset.y).toFixed(2));
-
-    const zIndex = Math.round(100 + 50 * Math.cos(radian));
-    const opacity = Number(Math.max(
-      0.4,
-      Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
-    ).toFixed(3));
-
-    return { x, y, angle, zIndex, opacity };
-  };
-
-  const getRelatedItems = (itemId: number): number[] => {
-    const currentItem = timelineData.find((item) => item.id === itemId);
-    return currentItem ? currentItem.relatedIds : [];
-  };
-
-  const isRelatedToActive = (itemId: number): boolean => {
-    if (!activeNodeId) return false;
-    const relatedItems = getRelatedItems(activeNodeId);
-    return relatedItems.includes(itemId);
-  };
-
-  const getStatusStyles = (status: TimelineItem["status"]): string => {
-    switch (status) {
-      case "completed":
-        return "text-white bg-black border-white";
-      case "in-progress":
-        return "text-black bg-white border-black";
-      case "pending":
-        return "text-white bg-black/40 border-white/50";
-      default:
-        return "text-white bg-black/40 border-white/50";
+      lastRef.current = ts;
+      rafRef.current  = requestAnimationFrame(loop);
     }
-  };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [nodes]);
+
+  const handleNode = useCallback((i: number) => {
+    setActiveIdx((prev) => (prev === i ? null : i));
+  }, []);
+
+  const close = useCallback(() => setActiveIdx(null), []);
+
+  const active = activeIdx !== null ? nodes[activeIdx] : null;
+
+  const initialCardPos = activeIdx !== null
+    ? clampCardPos(
+        CX + Math.cos((anglesRef.current[activeIdx] * Math.PI) / 180) * ORBIT_RADIUS,
+        CY + Math.sin((anglesRef.current[activeIdx] * Math.PI) / 180) * ORBIT_RADIUS,
+      )
+    : { left: 0, top: 0 };
 
   return (
     <div
-      className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden"
-      ref={containerRef}
-      onClick={handleContainerClick}
+      className="relative mx-auto select-none"
+      style={{ width: SCENE, height: SCENE }}
     >
-      <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
+      {/* Orbit ring */}
+      <div
+        className="absolute rounded-full border border-white/10 pointer-events-none"
+        style={{
+          width:  ORBIT_RADIUS * 2,
+          height: ORBIT_RADIUS * 2,
+          top:    CY - ORBIT_RADIUS,
+          left:   CX - ORBIT_RADIUS,
+        }}
+      />
+
+      {/* Center Core */}
+      <div
+        className="absolute flex flex-col items-center justify-center rounded-full
+                   bg-black/40 backdrop-blur-md border border-white/10 z-10 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+        style={{
+          width:  CENTER_SIZE,
+          height: CENTER_SIZE,
+          top:    CY - CENTER_SIZE / 2,
+          left:   CX - CENTER_SIZE / 2,
+        }}
+      >
+        {centerText.map((t, i) => (
+          <span
+            key={i}
+            className={
+              i === 0
+                ? "text-[16px] md:text-[18px] font-bold text-white leading-none text-center px-2 tracking-tighter font-grotesk uppercase"
+                : "text-[11px] md:text-[12px] text-neutral-400 font-medium text-center px-2 mt-1 font-grotesk opacity-80"
+            }
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+
+      {isMounted && nodes.map((node, i) => {
+        const init    = getXY(anglesRef.current[i], ORBIT_RADIUS);
+        const initLbl = getXY(anglesRef.current[i], ORBIT_RADIUS + LBL_OFFSET);
+        return (
+          <div key={i}>
+            <button
+              ref={(el) => { nodeRefs.current[i] = el; }}
+              onClick={() => handleNode(i)}
+              aria-label={node.label}
+              data-idx={i}
+              className={`absolute flex items-center justify-center rounded-full border
+                          transition-all duration-300 z-[5] text-3xl
+                          bg-black/60 backdrop-blur-sm
+                          border-white/10 text-white
+                          hover:border-white/40 hover:bg-black/80 hover:scale-110 shadow-lg`}
+              style={{
+                width:  NODE_SIZE,
+                height: NODE_SIZE,
+                top:    init.y - HALF_NODE,
+                left:   init.x - HALF_NODE,
+                willChange: "left, top",
+              }}
+            >
+              {node.icon.endsWith(".svg") ? (
+                <img 
+                  src={node.icon} 
+                  alt={node.label} 
+                  className="w-2/3 h-2/3 object-contain pointer-events-none"
+                />
+              ) : (
+                node.icon
+              )}
+            </button>
+
+            <span
+              ref={(el) => { labelRefs.current[i] = el; }}
+              className="absolute text-[12px] text-neutral-400 font-medium
+                         pointer-events-none whitespace-nowrap -translate-x-1/2 -translate-y-1/2 tracking-wide"
+              style={{
+                left: initLbl.x,
+                top:  initLbl.y,
+                willChange: "left, top",
+              }}
+            >
+              {node.label}
+            </span>
+          </div>
+        );
+      })}
+
+      {active && (
         <div
-          className="absolute w-full h-full flex items-center justify-center"
-          ref={orbitRef}
+          ref={cardRef}
+          className="absolute z-20 w-64 rounded-2xl
+                     bg-neutral-900/90 backdrop-blur-xl
+                     border border-white/10 shadow-2xl
+                     p-4"
           style={{
-            perspective: "1000px",
-            transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
+            left: initialCardPos.left,
+            top:  initialCardPos.top,
+            willChange: "left, top",
           }}
         >
-          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
-            <div className="absolute w-20 h-20 rounded-full border border-white/20 animate-ping opacity-70"></div>
-            <div
-              className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50"
-              style={{ animationDelay: "0.5s" }}
-            ></div>
-            <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
+          <button
+            onClick={close}
+            aria-label="Close"
+            className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center
+                       justify-center bg-white/5 hover:bg-white/10
+                       text-neutral-400 hover:text-white text-xs transition-colors"
+          >
+            ✕
+          </button>
+
+          <div className="flex items-center gap-2 mb-3">
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border
+                          uppercase tracking-tighter ${STATUS_CLASSES[active.status]}`}
+            >
+              {STATUS_LABELS[active.status]}
+            </span>
+            <span className="text-[11px] text-neutral-500 font-mono">
+              {active.date}
+            </span>
           </div>
 
-          <div className="absolute w-96 h-96 rounded-full border border-white/10"></div>
+          <p className="text-sm font-bold text-white mb-1 tracking-tight">
+            {active.label}
+          </p>
+          <p className="text-xs text-neutral-400 leading-relaxed mb-4">
+            {active.desc}
+          </p>
 
-          {isMounted && timelineData.map((item, index) => {
-            const position = calculateNodePosition(index, timelineData.length);
-            const isExpanded = expandedItems[item.id];
-            const isRelated = isRelatedToActive(item.id);
-            const isPulsing = pulseEffect[item.id];
-            const Icon = item.icon;
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[11px] text-neutral-500 uppercase tracking-widest font-semibold">⚡ Power</span>
+            <span className="text-[11px] font-bold text-white">
+              {active.energy}%
+            </span>
+          </div>
+          <div className="h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-1000"
+              style={{ width: `${active.energy}%` }}
+            />
+          </div>
 
-            const nodeStyle = {
-              transform: `translate(${position.x}px, ${position.y}px)`,
-              zIndex: isExpanded ? 200 : position.zIndex,
-              opacity: isExpanded ? 1 : position.opacity,
-            };
-
-            return (
-              <div
-                key={item.id}
-                ref={(el) => {
-                  nodeRefs.current[item.id] = el;
-                }}
-                className="absolute transition-all duration-700 cursor-pointer"
-                style={nodeStyle}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleItem(item.id);
-                }}
+          <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-600 font-bold mb-2">
+            Connected
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {active.connected.map((c) => (
+              <span
+                key={c}
+                className="text-[10px] px-2 py-0.5 rounded-md
+                           bg-white/5 border border-white/5
+                           text-neutral-400 font-medium"
               >
-                <div
-                  className={`absolute rounded-full -inset-1 ${
-                    isPulsing ? "animate-pulse duration-1000" : ""
-                  }`}
-                  style={{
-                    background: `radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)`,
-                    width: `${item.energy * 0.5 + 40}px`,
-                    height: `${item.energy * 0.5 + 40}px`,
-                    left: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                    top: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
-                  }}
-                ></div>
-
-                <div
-                  className={`
-                  w-10 h-10 rounded-full flex items-center justify-center
-                  ${
-                    isExpanded
-                      ? "bg-white text-black"
-                      : isRelated
-                      ? "bg-white/50 text-black"
-                      : "bg-black text-white"
-                  }
-                  border-2 
-                  ${
-                    isExpanded
-                      ? "border-white shadow-lg shadow-white/30"
-                      : isRelated
-                      ? "border-white animate-pulse"
-                      : "border-white/40"
-                  }
-                  transition-all duration-300 transform
-                  ${isExpanded ? "scale-150" : ""}
-                `}
-                >
-                  <Icon size={16} />
-                </div>
-
-                <div
-                  className={`
-                  absolute top-12  whitespace-nowrap
-                  text-xs font-semibold tracking-wider
-                  transition-all duration-300
-                  ${isExpanded ? "text-white scale-125" : "text-white/70"}
-                `}
-                >
-                  {item.title}
-                </div>
-
-                {isExpanded && (
-                  <Card className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-black/90 backdrop-blur-lg border-white/30 shadow-xl shadow-white/10 overflow-visible">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-center">
-                        <Badge
-                          className={`px-2 text-xs ${getStatusStyles(
-                            item.status
-                          )}`}
-                        >
-                          {item.status === "completed"
-                            ? "COMPLETE"
-                            : item.status === "in-progress"
-                            ? "IN PROGRESS"
-                            : "PENDING"}
-                        </Badge>
-                        <span className="text-xs font-mono text-white/50">
-                          {item.date}
-                        </span>
-                      </div>
-                      <CardTitle className="text-sm mt-2">
-                        {item.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs text-white/80">
-                      <p>{item.content}</p>
-
-                      <div className="mt-4 pt-3 border-t border-white/10">
-                        <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="flex items-center">
-                            <Zap size={10} className="mr-1" />
-                            Energy Level
-                          </span>
-                          <span className="font-mono">{item.energy}%</span>
-                        </div>
-                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                            style={{ width: `${item.energy}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {item.relatedIds.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-white/10">
-                          <div className="flex items-center mb-2">
-                            <Link size={10} className="text-white/70 mr-1" />
-                            <h4 className="text-xs uppercase tracking-wider font-medium text-white/70">
-                              Connected Nodes
-                            </h4>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {item.relatedIds.map((relatedId) => {
-                              const relatedItem = timelineData.find(
-                                (i) => i.id === relatedId
-                              );
-                              return (
-                                <Button
-                                  key={relatedId}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center h-6 px-2 py-0 text-xs rounded-none border-white/20 bg-transparent hover:bg-white/10 text-white/80 hover:text-white transition-all"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleItem(relatedId);
-                                  }}
-                                >
-                                  {relatedItem?.title}
-                                  <ArrowRight
-                                    size={8}
-                                    className="ml-1 text-white/60"
-                                  />
-                                </Button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            );
-          })}
+                {c}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

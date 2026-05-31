@@ -126,6 +126,22 @@
   }
 }
 
+/* Animation for the breathing glow effect */
+@keyframes breathing-glow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.animate-breathing-glow {
+  animation: breathing-glow 4s ease-in-out infinite;
+}
+
 /* Animation for the pulsing effect */
 @keyframes pulse {
   0%, 100% {

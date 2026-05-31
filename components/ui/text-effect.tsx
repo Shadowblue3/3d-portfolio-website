@@ -482,6 +482,119 @@ export function SamsungAboutMeEffect({
   );
 }
 
+export function SamsungProjectsEffect({
+  className,
+  speed = 1,
+  onAnimationComplete,
+  ...props
+}: Props) {
+  const calc = (x: number) => x * speed;
+  const containerRef = React.useRef(null);
+  const isInView = useInView(containerRef, { once: true, amount: 0.5 });
+
+  return (
+    <motion.svg
+      ref={containerRef}
+      className={cn("h-24 md:h-32", className)}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 1000 250"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="16"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.5 }}
+      {...props}
+    >
+      <title>Projects - Tech Style</title>
+
+      {/* P */}
+      <motion.path
+        d="M40 190 L40 50 L100 50 L100 120 L40 120"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.6), delay: calc(0) }}
+      />
+
+      {/* R */}
+      <motion.path
+        d="M140 190 L140 50 L200 50 L200 120 L140 120 M170 120 L210 190"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.7), delay: calc(0.4) }}
+      />
+
+      {/* O */}
+      <motion.path
+        d="M250 50 L310 50 L310 190 L250 190 Z"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.6), delay: calc(0.9) }}
+      />
+
+      {/* J */}
+      <motion.path
+        d="M390 50 L390 150 C390 180 350 180 350 150"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.6), delay: calc(1.3) }}
+      />
+
+      {/* E */}
+      <motion.path
+        d="M440 50 L500 50 M440 120 L480 120 M440 190 L500 190 M440 50 L440 190"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.7), delay: calc(1.7) }}
+      />
+
+      {/* C */}
+      <motion.path
+        d="M590 80 L540 50 L540 190 L590 160"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.6), delay: calc(2.2) }}
+      />
+
+      {/* T */}
+      <motion.path
+        d="M620 50 L700 50 M660 50 L660 190"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.5), delay: calc(2.6) }}
+      />
+
+      {/* S */}
+      <motion.path
+        d="M780 60 L720 60 L720 120 L780 120 L780 180 L720 180"
+        style={{ strokeLinecap: "square", strokeLinejoin: "miter" }}
+        initial={initialProps}
+        animate={isInView ? animateProps : initialProps}
+        transition={{ duration: calc(0.8), delay: calc(3.0) }}
+        onAnimationComplete={onAnimationComplete}
+      />
+
+      {/* Accent lines */}
+      <motion.g className="stroke-blue-500 opacity-50">
+        <motion.path
+          d="M30 220 L800 220"
+          strokeWidth="2"
+          initial={{ pathLength: 0 }}
+          animate={isInView ? { pathLength: 1 } : { pathLength: 0 }}
+          transition={{ duration: calc(1.5), delay: calc(3.5) }}
+        />
+      </motion.g>
+    </motion.svg>
+  );
+}
+
 export function SamsungSkillsEffect({
   className,
   speed = 1,
