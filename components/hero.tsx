@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import { SplineScene } from "@/components/ui/spline";
-import { Spotlight } from "@/components/ui/spotlight"
 import { TextScramble } from "@/components/ui/text-scramble"
-import { BackgroundPaths } from "@/components/ui/background-paths"
 import { GooeyText } from "@/components/ui/gooey-text-morphing"
 
 export function HeroSection() {
@@ -12,13 +10,7 @@ export function HeroSection() {
   const [showDescription, setShowDescription] = useState(false)
 
   return (
-    <div className="w-full h-screen relative overflow-hidden">
-      <BackgroundPaths />
-      <Spotlight
-        className="-top-40 left-0 md:left-60 md:-top-20"
-        fill="white"
-      />
-      
+    <div className="w-full h-screen relative">
       <div className="flex h-full">
         {/* Left content */}
         <div className="flex-1 p-8 md:pl-24 lg:pl-32 relative z-10 flex flex-col justify-center">

@@ -1,7 +1,6 @@
 "use client";
 
 import { SamsungSkillsEffect, SamsungProjectsEffect } from "@/components/ui/text-effect";
-import { Spotlight } from "@/components/ui/spotlight";
 import RadialOrbitalTimeline, { OrbitNode } from "@/components/ui/radial-orbital-timeline";
 import { FeatureCarousel } from "@/components/ui/feature-carousel";
 
@@ -31,12 +30,7 @@ const languageNodes: OrbitNode[] = [
 export function SkillsAndTimeline() {
   return (
     <>
-      <section className="py-20 relative overflow-hidden flex flex-col items-center border-b border-white/5">
-        <Spotlight
-          className="-top-40 left-0 md:left-60 md:-top-20"
-          fill="white"
-        />
-        
+      <section className="py-20 flex flex-col items-center border-b border-white/5">
         {/* "SKILLS" Tech Drawing Title */}
         <div className="w-full flex justify-center relative z-10 mb-10">
           <SamsungSkillsEffect speed={0.6} className="text-white" />
@@ -73,12 +67,7 @@ export function SkillsAndTimeline() {
       </section>
 
       {/* Projects Section */}
-      <section className="py-32 relative overflow-hidden flex flex-col items-center">
-        <Spotlight
-          className="-top-40 right-0 md:right-60 md:-top-20"
-          fill="white"
-        />
-        
+      <section className="py-32 flex flex-col items-center">
         {/* "PROJECTS" Tech Drawing Title */}
         <div className="w-full flex justify-center relative z-10 mb-20">
           <SamsungProjectsEffect speed={0.6} className="text-white" />
