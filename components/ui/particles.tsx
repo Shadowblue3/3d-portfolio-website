@@ -57,7 +57,7 @@ export default function ParticlesComponent() {
         detect_on: "window",
         events: {
           onhover: { enable: true, mode: "grab" },
-          onclick: { enable: true, mode: "push" },
+          onclick: { enable: false },
           resize: true,
         },
         modes: {
