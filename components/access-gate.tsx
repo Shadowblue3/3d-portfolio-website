@@ -255,7 +255,7 @@ export function AccessGate({ onComplete }: { onComplete?: () => void }) {
   const isRevealing = stage === "revealing"
   const statusText =
     stage === "idle"
-      ? "[SYSTEM READY]"
+      ? "[CLICK & HOLD TO SCAN]"
       : stage === "holding"
         ? "LINKING NEURAL PATHWAYS..."
         : stage === "verified"
