@@ -10,6 +10,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import ParticlesComponent from "@/components/ui/particles";
 import { InteractiveMenu } from "@/components/ui/navbar-menu";
 import { AccessGate } from "@/components/access-gate";
+import { Logo } from "@/components/logo";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Page() {
@@ -26,6 +27,9 @@ export default function Page() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           >
+            {/* Logo */}
+            <Logo />
+
             {/* Navbar */}
             <InteractiveMenu accentColor="#3b82f6" />
 
